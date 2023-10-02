@@ -81,3 +81,5 @@ namespace Brickcell {
         dsw = sw;
     }
 }
+
+// Modified from: https://github.com/tinkertanker/pxt-rotary-encoder-ky040/
