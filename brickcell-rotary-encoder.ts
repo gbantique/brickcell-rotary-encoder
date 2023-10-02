@@ -1,3 +1,10 @@
+enum RotationDirection {
+    //% block="Left"
+    Left = 0,
+    //% block="Right"
+    Right = 1
+}
+
 //% color="#FFBF00" icon="\uf12e" weight=70
 namespace Brickcell {
     let ri: DigitalPin;
@@ -9,16 +16,11 @@ namespace Brickcell {
     let rotatedRightID = 5602;
     let rotateReady = true;
 
-    enum RotationDirection {
-        Left = 0,
-        Right = 1
-    }
-
     /**
      * rotary encoder was rotated.
      */
     //% blockId=brickcell_rotary_encoder_on_rotate_event
-    //% block="on rotated |%dir"
+    //% block="on rotated |$dir"
     //% subcategory="rotary encoder"
     export function onRotateEvent(dir: RotationDirection, body: () => void): void {
         serial.setBaudRate(115200);
