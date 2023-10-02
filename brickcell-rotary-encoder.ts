@@ -69,10 +69,10 @@ namespace Brickcell {
     }
 
     /**
-     * initialises local variables and enables the rotary encoder.
+     * Configure pins for the Rotary Encoder.
      */
     //% blockId=brickcell_rotary_encoder_init
-    //% block="connect clk %clk|dt %dt|sw %sw"
+    //% block="connect SA %clk|SB %dt|SW %sw"
     //% icon="\uf1ec"
     //% subcategory="rotary encoder"
     export function init(clk: DigitalPin, dt: DigitalPin, sw: DigitalPin): void {
