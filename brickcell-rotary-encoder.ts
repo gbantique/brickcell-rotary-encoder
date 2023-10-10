@@ -1,27 +1,26 @@
+let ri: DigitalPin;
+let dv: DigitalPin;
+let dsw: DigitalPin;
+let lastPressed = 1;
+let pressedID = 5600;
+let rotatedLeftID = 5601;
+let rotatedRightID = 5602;
+let rotateReady = true;
+
 enum RotationDirection {
-    //% block="Left"
     Left = 0,
-    //% block="Right"
     Right = 1
 }
 
-//% color="#FFBF00" icon="\uf12e" weight=70
-namespace Brickcell {
-    let ri: DigitalPin;
-    let dv: DigitalPin;
-    let dsw: DigitalPin;
-    let lastPressed = 1;
-    let pressedID = 5600;
-    let rotatedLeftID = 5601;
-    let rotatedRightID = 5602;
-    let rotateReady = true;
+//% color=50 weight=80
+//% icon="\uf01e"
+namespace RotaryEncoder {
 
     /**
      * rotary encoder was rotated.
      */
-    //% blockId=brickcell_rotary_encoder_on_rotate_event
-    //% block="on rotated |$dir"
-    //% subcategory="rotary encoder"
+    //% blockId=rotary_ky_rotated_left_event
+    //% block="on rotated |%dir"
     export function onRotateEvent(dir: RotationDirection, body: () => void): void {
         serial.setBaudRate(115200);
         if (dir == RotationDirection.Left) control.onEvent(rotatedLeftID, dir, body);
@@ -53,9 +52,8 @@ namespace Brickcell {
     /**
      * rotary encoder button was pressed.
      */
-    //% blockId=brickcell_rotary_encoder_on_press_event
+    //% blockId=rotary_ky_pressed_event
     //% block="on button pressed"
-    //% subcategory="rotary encoder"
     export function onPressEvent(body: () => void): void {
         control.onEvent(pressedID, 0, body);
         control.inBackground(() => {
@@ -71,17 +69,14 @@ namespace Brickcell {
     }
 
     /**
-     * Configure pins for the Rotary Encoder.
+     * initialises local variables and enables the rotary encoder.
      */
-    //% blockId=brickcell_rotary_encoder_init
-    //% block="connect SA %clk|SB %dt|SW %sw"
+    //% blockId=rotary_ky_init
+    //% block="connect clk %clk|dt %dt|sw %sw"
     //% icon="\uf1ec"
-    //% subcategory="rotary encoder"
     export function init(clk: DigitalPin, dt: DigitalPin, sw: DigitalPin): void {
         ri = clk;
         dv = dt;
         dsw = sw;
     }
 }
-
-// Modified from: https://github.com/tinkertanker/pxt-rotary-encoder-ky040/
