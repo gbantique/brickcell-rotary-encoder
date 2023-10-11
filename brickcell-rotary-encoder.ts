@@ -1,84 +1,82 @@
-let ri: DigitalPin;
-let dv: DigitalPin;
-let dsw: DigitalPin;
-let lastPressed = 1;
-let pressedID = 5600;
-let rotatedLeftID = 5605;
-let rotatedRightID = 5610;
-let rotateReady = true;
-
 enum RotationDirection {
     Left = 0,
     Right = 1
 }
 
-//% color=50 weight=80
-//% icon="\uf01e"
-namespace RotaryEncoder {
+//% color="#FFBF00" icon="\uf12e" weight=70
+namespace Brickcell {
+    let switchA: DigitalPin;
+    let switchB: DigitalPin;
+    let switchW: DigitalPin;
+    
+    let pressedID = 5600;
+    let rotatedLeftID = 5605;
+    let rotatedRightID = 5610;
 
     /**
-     * rotary encoder was rotated.
+     * Initialize rotary encoder pins
      */
-    //% blockId=rotary_ky_rotated_left_event
-    //% block="on rotated |%dir"
-    export function onRotateEvent(dir: RotationDirection, body: () => void): void {
+    //% sa.defl=DigitalPin.P0 sb.defl=DigitalPin.P1 sw.defl=DigitalPin.P2
+    //% block="Init Rotary:|sa:$sa sb:$sb sw:$sw"
+    //% subcategory="rotary encoder"
+    export function initRotary(sa:DigitalPin, sb:DigitalPin, sw:DigitalPin): void {
+        pins.setPull(sa, PinPullMode.PullNone);
+        pins.setPull(sb, PinPullMode.PullNone);
+        pins.setPull(sw, PinPullMode.PullNone);
+        switchA = sa;
+        switchB = sb;
+        switchW = sw;
+    }
+
+    /**
+     * Handle onRotate event
+     */
+    //% block="on rotate |%dir"
+    //% subcategory="rotary encoder"
+    export function onRotate(dir: RotationDirection, body: () => void): void {
+        // set the event ID according to the selected direction.
         if (dir == RotationDirection.Left) control.onEvent(rotatedLeftID, dir, body);
         if (dir == RotationDirection.Right) control.onEvent(rotatedRightID, dir, body);
-        
+        // set the callback function concurrent to the main process
         control.inBackground(() => {
             while (true) {
-                
-                const riValue = pins.digitalReadPin(ri);
-                const dvValue = pins.digitalReadPin(dv);
-
-                if (riValue == 1 && dvValue == 1) rotateReady = true;
-                else if (rotateReady) {
-                    if (riValue == 1 && dvValue == 0) {
-                        //serial.writeLine("Right!");
-                        rotateReady = false;
+                // if falling edge is detected on switchA
+                pins.onPulsed(switchA, PulseValue.Low, function () {
+                    // check the logic level of switchB
+                    if (pins.digitalReadPin(switchB) == 0) {
+                        // call the event handler for the right rotation
                         control.raiseEvent(rotatedRightID, RotationDirection.Right);
-                    }
-                    else if (riValue == 0 && dvValue == 1) {
-                        //serial.writeLine("Left!")
-                        rotateReady = false;
+                    } else {
+                        // call the event handler for the left rotation
                         control.raiseEvent(rotatedLeftID, RotationDirection.Left);
                     }
-                }
-                basic.pause(5);
+                });
+                // give time for other process
+                basic.pause(20);
             }
-        })
+        });
     }
 
     /**
-     * rotary encoder button was pressed.
+     * Handle onPress event
      */
-    //% blockId=rotary_ky_pressed_event
-    //% block="on button pressed"
-    export function onPressEvent(body: () => void): void {
+    //% block="onPress"
+    //% subcategory="rotary encoder"
+    export function onPress(body: () => void): void {
+        // set the event ID for the press event
         control.onEvent(pressedID, 0, body);
+        // set the callback function concurrent with the main process
         control.inBackground(() => {
+            // which runs continuously
             while (true) {
-                const pressed = pins.digitalReadPin(dsw);
-                if (pressed != lastPressed) {
-                    lastPressed = pressed;
-                    if (pressed == 0) control.raiseEvent(pressedID, 0);
+                // checking if the button is press
+                if (pins.digitalReadPin(switchW) == 1) {
+                    // yes button is pressed, call the event
+                    control.raiseEvent(pressedID, 0);
                 }
-                basic.pause(50);
+                // give enough time for button press
+                basic.pause(300);
             }
         })
-    }
-
-    /**
-     * initialises local variables and enables the rotary encoder.
-     */
-    //% blockId=rotary_ky_init
-    //% block="connect clk %clk|dt %dt|sw %sw"
-    //% icon="\uf1ec"
-    export function init(clk: DigitalPin, dt: DigitalPin, sw: DigitalPin): void {
-        ri = clk;
-        dv = dt;
-        dsw = sw;
     }
 }
-
-// Original code from: https://github.com/tinkertanker/pxt-rotary-encoder-ky040/
